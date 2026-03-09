@@ -31,6 +31,97 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow Condensed',
 #scanlines{position:fixed;inset:0;z-index:2;pointer-events:none;
   background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);}
 
+/* ── SCROLL ZOOM INTRO ── */
+#drive-intro{
+  position:fixed;inset:0;z-index:9000;
+  overflow:hidden;
+  background:#030603;
+  cursor:none;
+  opacity:0;
+}
+#drive-intro.hidden{display:none;}
+/* the zoomable map — starts tiny (zoomed out = satellite) */
+#drive-map{
+  position:absolute;
+  width:100%;height:100%;
+  top:0;left:0;
+  transform-origin:center center;
+  transform:scale(0.18);
+  will-change:transform,filter;
+}
+#drive-map svg{width:100%;height:100%;display:block;}
+/* dark vignette around edges */
+#drive-intro::after{
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse 70% 70% at 50% 50%,transparent 40%,rgba(0,0,0,0.75) 100%);
+}
+/* scroll hint */
+#scroll-hint{
+  position:absolute;bottom:52px;left:50%;transform:translateX(-50%);
+  z-index:5;text-align:center;
+  opacity:0;transition:opacity 0.6s ease;
+  pointer-events:none;
+}
+#scroll-hint.show{opacity:1;}
+#scroll-hint-txt{
+  font-size:10px;letter-spacing:7px;color:rgba(255,255,255,0.5);
+  text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;
+  font-weight:600;
+}
+#scroll-arrow{
+  width:1px;height:28px;background:linear-gradient(to bottom,rgba(107,191,57,0.6),transparent);
+  margin:10px auto 0;
+  animation:arrowPulse 1.4s ease-in-out infinite;
+}
+@keyframes arrowPulse{
+  0%,100%{opacity:0.3;transform:scaleY(0.7);}
+  50%{opacity:1;transform:scaleY(1);}
+}
+/* progress ring top-right */
+#zoom-progress{
+  position:absolute;top:28px;right:32px;z-index:5;
+  opacity:0;transition:opacity 0.4s;
+}
+#zoom-progress.show{opacity:1;}
+#zoom-pct-txt{
+  font-size:9px;letter-spacing:3px;color:#444;
+  text-transform:uppercase;text-align:right;margin-top:4px;
+}
+/* name that fades in near completion */
+#intro-name{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:5;text-align:center;
+  opacity:0;transition:opacity 0.5s ease;
+  pointer-events:none;
+}
+#intro-name-big{
+  font-size:clamp(52px,7vw,110px);font-weight:700;
+  color:#fff;letter-spacing:4px;text-transform:uppercase;line-height:0.9;
+  text-shadow:0 0 60px rgba(107,191,57,0.2);
+}
+#intro-name-sub{
+  font-size:11px;letter-spacing:7px;color:var(--green);
+  text-transform:uppercase;margin-top:16px;font-weight:500;
+}
+/* flash overlay for the pause snap */
+#pause-flash{
+  position:absolute;inset:0;z-index:6;
+  background:rgba(255,255,255,0);pointer-events:none;
+}
+/* topbar + content hidden until intro done */
+#topbar{
+  transform:translateY(-100%);
+  transition:transform 0.55s cubic-bezier(0.2,0,0.3,1);
+}
+#topbar.visible{transform:translateY(0);}
+#content{opacity:0;transition:opacity 0.5s ease;}
+#content.visible{opacity:1;}
+/* footer too */
+#footer{opacity:0;transition:opacity 0.5s ease 0.2s;}
+#footer.visible{opacity:1;}
+}
+
 /* ── MAP SVG (shared) ── */
 .map-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
 
@@ -63,7 +154,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow Condensed',
 @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
 /* glass card */
-.panel{background:var(--panel);border:1px solid var(--panel-border);backdrop-filter:blur(18px);}
+.panel{background:var(--panel);border:1px solid var(--panel-border);backdrop-filter:blur(18px);border-radius:0;}
 
 /* area notif */
 #area-notif{position:fixed;left:50%;transform:translateX(-50%);bottom:50px;z-index:500;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.5s ease;}
@@ -101,77 +192,79 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow Condensed',
 
 /* ── ABOUT layout ── */
 #about{position:relative;flex:1;}
-#about-map-bg{position:absolute;inset:0;z-index:0;opacity:0.18;overflow:hidden;}
+#about-map-bg{position:absolute;inset:0;z-index:0;opacity:0.22;overflow:hidden;}
 #about-content{position:relative;z-index:1;display:flex;gap:0;height:100%;}
-#about-left{flex:1;padding:40px 44px 200px 44px;}
-#about-right{width:230px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.06);
-  padding:28px 20px;background:rgba(0,0,0,0.55);backdrop-filter:blur(20px);overflow-y:auto;}
+#about-left{flex:1;padding:52px 60px 200px 60px;}
+#about-right{width:260px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.06);
+  padding:36px 24px;background:rgba(0,0,0,0.6);backdrop-filter:blur(20px);overflow-y:auto;}
 
-.eyebrow{font-size:9px;letter-spacing:6px;color:var(--green);text-transform:uppercase;margin-bottom:10px;}
-.player-name{font-size:54px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;line-height:0.95;margin-bottom:12px;}
-.name-rule{width:40px;height:2px;background:var(--green);margin:14px 0 16px;}
-.player-title{font-size:12px;letter-spacing:4px;color:#999;text-transform:uppercase;margin-bottom:22px;font-weight:500;}
-.player-bio{font-family:'Barlow',sans-serif;font-size:14px;color:#bbb;line-height:1.85;max-width:470px;margin-bottom:32px;font-weight:300;}
-.stats-row{display:flex;}
-.stat-box{padding-right:26px;margin-right:26px;border-right:1px solid rgba(255,255,255,0.1);}
+.eyebrow{font-size:10px;letter-spacing:7px;color:var(--green);text-transform:uppercase;margin-bottom:14px;}
+.player-name{font-size:clamp(64px,6vw,96px);font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;line-height:0.92;margin-bottom:16px;}
+.name-rule{width:50px;height:2px;background:var(--green);margin:18px 0 20px;}
+.player-title{font-size:13px;letter-spacing:5px;color:#888;text-transform:uppercase;margin-bottom:28px;font-weight:500;}
+.player-bio{font-family:'Barlow',sans-serif;font-size:16px;color:#bbb;line-height:1.9;max-width:520px;margin-bottom:40px;font-weight:300;}
+.stats-row{display:flex;gap:0;}
+.stat-box{padding-right:36px;margin-right:36px;border-right:1px solid rgba(255,255,255,0.1);}
 .stat-box:last-child{border-right:none;padding-right:0;margin-right:0;}
-.stat-val{font-size:28px;font-weight:700;color:#fff;}
-.stat-label{font-size:9px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.stat-val{font-size:36px;font-weight:700;color:#fff;}
+.stat-label{font-size:10px;color:#555;letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
 
-.s-header{font-size:9px;color:#333;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;}
-.s-row{margin-bottom:13px;}
-.s-key{font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;}
-.s-val{font-size:13px;color:#ccc;margin-top:2px;font-family:'Barlow',sans-serif;}
-.s-divider{height:1px;background:rgba(255,255,255,0.05);margin:14px 0;}
+.s-header{font-size:9px;color:#2a3a2a;letter-spacing:4px;text-transform:uppercase;margin-bottom:18px;}
+.s-row{margin-bottom:16px;}
+.s-key{font-size:9px;color:#555;letter-spacing:3px;text-transform:uppercase;}
+.s-val{font-size:14px;color:#ccc;margin-top:3px;font-family:'Barlow',sans-serif;}
+.s-divider{height:1px;background:rgba(255,255,255,0.05);margin:16px 0;}
 
 /* ── BRIEF (map) ── */
 #brief{position:relative;flex:1;}
-#brief-map-wrap{position:absolute;inset:0;z-index:0;}
-.map-jobs-panel{position:absolute;top:18px;left:18px;width:330px;padding:16px;z-index:10;max-height:calc(100% - 36px);overflow-y:auto;}
-.map-char-panel{position:absolute;top:18px;right:18px;width:210px;padding:16px;z-index:10;}
-.job-entry{padding:9px 11px;margin-bottom:7px;border-left:3px solid rgba(255,255,255,0.07);
+#brief-map-wrap{position:absolute;inset:0;z-index:0;display:flex;}
+.map-jobs-panel{position:absolute;top:0;left:0;width:42%;padding:24px 28px;z-index:10;height:100%;overflow-y:auto;
+  background:rgba(4,8,4,0.0);border-right:1px solid rgba(255,255,255,0.05);}
+.map-char-panel{position:absolute;top:0;right:0;width:22%;padding:24px 22px;z-index:10;height:100%;overflow-y:auto;
+  background:rgba(4,8,4,0.0);border-left:1px solid rgba(255,255,255,0.05);}
+.job-entry{padding:14px 16px;margin-bottom:10px;border-left:3px solid rgba(255,255,255,0.07);
   background:rgba(255,255,255,0.02);cursor:none;transition:border-color 0.18s;}
 .job-entry.active-job{border-left-color:var(--green);}
 .job-entry:hover{border-left-color:rgba(107,191,57,0.4);}
-.job-num{font-size:9px;color:rgba(255,255,255,0.15);letter-spacing:2px;margin-bottom:3px;}
-.job-role{font-size:13px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
-.job-badge{display:inline-block;font-size:8px;letter-spacing:2px;padding:1px 7px;text-transform:uppercase;margin-bottom:4px;}
+.job-num{font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:3px;margin-bottom:5px;}
+.job-role{font-size:16px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.job-badge{display:inline-block;font-size:9px;letter-spacing:2px;padding:3px 10px;text-transform:uppercase;margin-bottom:7px;}
 .badge-active{background:var(--green);color:#fff;}
 .badge-done{background:rgba(107,191,57,0.1);color:var(--green);}
-.job-meta{font-size:11px;color:#666;font-family:'Barlow',sans-serif;font-weight:300;}
-.job-desc{font-size:12px;color:#888;font-family:'Barlow',sans-serif;font-weight:300;line-height:1.6;margin-top:5px;}
+.job-meta{font-size:12px;color:#666;font-family:'Barlow',sans-serif;font-weight:300;margin-bottom:4px;}
+.job-desc{font-size:13px;color:#888;font-family:'Barlow',sans-serif;font-weight:300;line-height:1.7;margin-top:6px;}
 
 /* ── STATS ── */
 #stats{overflow-y:auto;}
-#stats-inner{padding:36px 44px 200px 44px;}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px 52px;margin-bottom:26px;}
-.cat-header{font-size:9px;color:var(--green);letter-spacing:4px;text-transform:uppercase;
-  margin-bottom:13px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,0.07);}
-.skill-row{margin-bottom:11px;}
-.skill-top{display:flex;justify-content:space-between;margin-bottom:4px;}
-.skill-name{font-size:12px;color:#bbb;font-family:'Barlow',sans-serif;font-weight:300;}
-.skill-pct{font-size:11px;color:#555;}
+#stats-inner{padding:44px 60px 200px 60px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px 80px;margin-bottom:32px;}
+.cat-header{font-size:10px;color:var(--green);letter-spacing:5px;text-transform:uppercase;
+  margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.skill-row{margin-bottom:14px;}
+.skill-top{display:flex;justify-content:space-between;margin-bottom:5px;}
+.skill-name{font-size:13px;color:#bbb;font-family:'Barlow',sans-serif;font-weight:300;}
+.skill-pct{font-size:12px;color:#555;}
 .skill-track{height:3px;background:rgba(255,255,255,0.06);}
 .skill-fill{height:100%;background:var(--green);box-shadow:0 0 8px var(--green-glow);transition:width 1.2s ease;}
 
 /* ── OPTIONS ── */
 #options{overflow-y:auto;}
-#options-inner{padding:36px 44px 200px 44px;display:flex;gap:52px;}
-#contact-left{flex:1;max-width:450px;}
-.opts-eyebrow{font-size:9px;letter-spacing:5px;color:var(--green);text-transform:uppercase;margin-bottom:22px;}
+#options-inner{padding:44px 60px 200px 60px;display:flex;gap:60px;}
+#contact-left{flex:1;max-width:480px;}
+.opts-eyebrow{font-size:10px;letter-spacing:6px;color:var(--green);text-transform:uppercase;margin-bottom:26px;}
 .contact-panel{background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.07);
-  padding:18px 18px;margin-bottom:20px;backdrop-filter:blur(10px);}
+  padding:20px;margin-bottom:22px;backdrop-filter:blur(10px);}
 .incoming{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;transition:opacity 0.3s;}
 .incoming.on{color:var(--green);opacity:1;}.incoming.off{opacity:0;}
-.contact-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.contact-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
 .contact-k{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:2px;}
-.contact-v{font-size:13px;color:#ccc;font-family:'Barlow',sans-serif;}
-.form-label{font-size:9px;color:#555;letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;margin-top:11px;}
+.contact-v{font-size:14px;color:#ccc;font-family:'Barlow',sans-serif;}
+.form-label{font-size:9px;color:#555;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;margin-top:14px;}
 .form-input,.form-textarea{width:100%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.07);
-  color:#fff;padding:9px 11px;font-size:13px;font-family:'Barlow',sans-serif;outline:none;resize:vertical;transition:border-color 0.18s;}
+  color:#fff;padding:10px 13px;font-size:14px;font-family:'Barlow',sans-serif;outline:none;resize:vertical;transition:border-color 0.18s;}
 .form-input:focus,.form-textarea:focus{border-color:var(--green);}
-.send-btn{margin-top:11px;background:var(--green);color:#fff;border:none;
-  padding:11px 30px;font-size:11px;letter-spacing:3px;text-transform:uppercase;
+.send-btn{margin-top:13px;background:var(--green);color:#fff;border:none;
+  padding:13px 36px;font-size:11px;letter-spacing:4px;text-transform:uppercase;
   cursor:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;transition:background 0.18s;}
 .send-btn:hover{background:var(--green-dark);}
 
@@ -460,6 +553,82 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow Condensed',
 <div id="bg"></div>
 <div id="scanlines"></div>
 
+<!-- ── SCROLL ZOOM INTRO ── -->
+<div id="drive-intro">
+  <div id="drive-map">
+    <svg width="100%" height="100%" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1400" height="800" fill="#070d07"/>
+      <g stroke="#111811" stroke-width="1" fill="none">
+        <line x1="0" y1="80" x2="1400" y2="80"/><line x1="0" y1="160" x2="1400" y2="160"/>
+        <line x1="0" y1="240" x2="1400" y2="240"/><line x1="0" y1="320" x2="1400" y2="320"/>
+        <line x1="0" y1="400" x2="1400" y2="400"/><line x1="0" y1="480" x2="1400" y2="480"/>
+        <line x1="0" y1="560" x2="1400" y2="560"/><line x1="0" y1="640" x2="1400" y2="640"/>
+        <line x1="0" y1="720" x2="1400" y2="720"/>
+        <line x1="100" y1="0" x2="100" y2="800"/><line x1="200" y1="0" x2="200" y2="800"/>
+        <line x1="300" y1="0" x2="300" y2="800"/><line x1="400" y1="0" x2="400" y2="800"/>
+        <line x1="500" y1="0" x2="500" y2="800"/><line x1="600" y1="0" x2="600" y2="800"/>
+        <line x1="700" y1="0" x2="700" y2="800"/><line x1="800" y1="0" x2="800" y2="800"/>
+        <line x1="900" y1="0" x2="900" y2="800"/><line x1="1000" y1="0" x2="1000" y2="800"/>
+        <line x1="1100" y1="0" x2="1100" y2="800"/><line x1="1200" y1="0" x2="1200" y2="800"/>
+        <line x1="1300" y1="0" x2="1300" y2="800"/>
+      </g>
+      <g stroke="#1c2e1c" stroke-width="4" fill="none">
+        <line x1="0" y1="260" x2="1400" y2="260"/><line x1="0" y1="540" x2="1400" y2="540"/>
+        <line x1="350" y1="0" x2="350" y2="800"/><line x1="700" y1="0" x2="700" y2="800"/><line x1="1050" y1="0" x2="1050" y2="800"/>
+        <line x1="0" y1="800" x2="700" y2="0"/><line x1="400" y1="800" x2="1400" y2="100"/>
+      </g>
+      <!-- buildings scattered across full map -->
+      <g fill="#0b180b">
+        <rect x="110" y="90" width="80" height="80"/><rect x="210" y="90" width="70" height="80"/>
+        <rect x="110" y="180" width="80" height="70"/><rect x="360" y="90" width="80" height="80"/>
+        <rect x="460" y="100" width="70" height="70"/><rect x="560" y="90" width="80" height="80"/>
+        <rect x="710" y="90" width="80" height="80"/><rect x="810" y="100" width="70" height="70"/>
+        <rect x="910" y="90" width="80" height="80"/><rect x="1060" y="90" width="80" height="80"/>
+        <rect x="1160" y="100" width="70" height="70"/><rect x="1260" y="90" width="80" height="80"/>
+        <rect x="110" y="280" width="70" height="80"/><rect x="190" y="290" width="80" height="70"/>
+        <rect x="360" y="280" width="80" height="80"/><rect x="560" y="280" width="80" height="80"/>
+        <rect x="710" y="280" width="80" height="80"/><rect x="910" y="280" width="80" height="80"/>
+        <rect x="1060" y="280" width="80" height="80"/><rect x="1260" y="280" width="80" height="80"/>
+        <rect x="110" y="560" width="80" height="80"/><rect x="210" y="560" width="70" height="80"/>
+        <rect x="360" y="560" width="90" height="80"/><rect x="560" y="560" width="80" height="80"/>
+        <rect x="710" y="560" width="80" height="80"/><rect x="810" y="560" width="70" height="80"/>
+        <rect x="910" y="560" width="80" height="80"/><rect x="1060" y="560" width="80" height="80"/>
+        <rect x="1160" y="560" width="70" height="80"/><rect x="1260" y="560" width="80" height="80"/>
+        <rect x="110" y="660" width="80" height="80"/><rect x="360" y="660" width="80" height="80"/>
+        <rect x="710" y="660" width="80" height="80"/><rect x="1060" y="660" width="80" height="80"/>
+      </g>
+      <!-- parks -->
+      <ellipse cx="700" cy="400" rx="130" ry="90" fill="#0c1c0c" opacity="0.9"/>
+      <ellipse cx="200" cy="400" rx="80" ry="60" fill="#0c1c0c" opacity="0.7"/>
+      <ellipse cx="1200" cy="400" rx="90" ry="65" fill="#0c1c0c" opacity="0.7"/>
+      <!-- highway -->
+      <path d="M 0 415 Q 350 395 700 420 Q 1050 448 1400 412" stroke="#223022" stroke-width="6" fill="none"/>
+      <!-- glowing player marker at center -->
+      <circle cx="700" cy="400" r="7" fill="var(--green)"/>
+      <circle cx="700" cy="400" r="14" fill="none" stroke="var(--green)" stroke-width="1.5" opacity="0.5"/>
+      <circle cx="700" cy="400" r="24" fill="none" stroke="var(--green)" stroke-width="1" opacity="0.25"/>
+      <circle cx="700" cy="400" r="40" fill="none" stroke="var(--green)" stroke-width="0.5" opacity="0.1"/>
+      <!-- other markers -->
+      <circle cx="350" cy="260" r="5" fill="#3a6a2a"/><circle cx="350" cy="260" r="9" fill="none" stroke="#3a6a2a" stroke-width="1" opacity="0.5"/>
+      <circle cx="1050" cy="540" r="5" fill="#3a6a2a"/><circle cx="1050" cy="540" r="9" fill="none" stroke="#3a6a2a" stroke-width="1" opacity="0.5"/>
+      <circle cx="200" cy="560" r="4" fill="#2a5a1a"/>
+      <circle cx="1260" cy="280" r="4" fill="#2a5a1a"/>
+    </svg>
+  </div>
+  <div id="pause-flash"></div>
+  <div id="intro-name">
+    <div id="intro-name-big">Ujwal<br>Hannehra</div>
+    <div id="intro-name-sub">Project Coordinator · Bengaluru</div>
+  </div>
+  <div id="zoom-progress" class="">
+    <div id="zoom-pct-txt">0%</div>
+  </div>
+  <div id="scroll-hint">
+    <div id="scroll-hint-txt">Scroll to Enter</div>
+    <div id="scroll-arrow"></div>
+  </div>
+</div>
+
 <!-- ── TOP BAR ── -->
 <div id="topbar">
   <div id="inforow">
@@ -598,55 +767,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow Condensed',
   <!-- BRIEF -->
   <div id="brief" class="section">
     <div id="brief-map-wrap" style="height:100%;">
-      <svg width="100%" height="100%" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <rect width="1400" height="800" fill="#0a130a"/>
-        <rect x="950" y="0" width="450" height="800" fill="#081208" opacity="0.7"/>
-        <g stroke="#1a2a1a" stroke-width="1" fill="none" opacity="0.6">
-          <line x1="0" y1="100" x2="950" y2="100"/><line x1="0" y1="200" x2="950" y2="200"/>
-          <line x1="0" y1="300" x2="950" y2="300"/><line x1="0" y1="400" x2="950" y2="400"/>
-          <line x1="0" y1="500" x2="950" y2="500"/><line x1="0" y1="600" x2="950" y2="600"/>
-          <line x1="0" y1="700" x2="950" y2="700"/>
-          <line x1="100" y1="0" x2="100" y2="800"/><line x1="200" y1="0" x2="200" y2="800"/>
-          <line x1="300" y1="0" x2="300" y2="800"/><line x1="400" y1="0" x2="400" y2="800"/>
-          <line x1="500" y1="0" x2="500" y2="800"/><line x1="600" y1="0" x2="600" y2="800"/>
-          <line x1="700" y1="0" x2="700" y2="800"/><line x1="800" y1="0" x2="800" y2="800"/>
-        </g>
-        <g stroke="#243024" stroke-width="3" fill="none">
-          <line x1="0" y1="280" x2="950" y2="280"/><line x1="0" y1="540" x2="950" y2="540"/>
-          <line x1="370" y1="0" x2="370" y2="800"/><line x1="660" y1="0" x2="660" y2="800"/>
-          <line x1="0" y1="800" x2="520" y2="0"/><line x1="250" y1="800" x2="950" y2="120"/>
-        </g>
-        <g fill="#0d180d" opacity="0.8">
-          <rect x="110" y="110" width="80" height="80"/><rect x="210" y="110" width="70" height="80"/>
-          <rect x="380" y="110" width="75" height="80"/><rect x="465" y="120" width="70" height="70"/>
-          <rect x="670" y="110" width="80" height="80"/><rect x="760" y="110" width="70" height="80"/>
-          <rect x="110" y="300" width="70" height="90"/><rect x="200" y="310" width="80" height="80"/>
-          <rect x="380" y="300" width="80" height="90"/><rect x="670" y="300" width="80" height="90"/>
-          <rect x="110" y="560" width="80" height="80"/><rect x="210" y="560" width="70" height="80"/>
-          <rect x="380" y="560" width="90" height="80"/><rect x="670" y="560" width="80" height="80"/>
-          <rect x="760" y="560" width="70" height="80"/>
-        </g>
-        <ellipse cx="520" cy="415" rx="85" ry="60" fill="#0f1f0f" opacity="0.9"/>
-        <path d="M 0 410 Q 200 390 420 430 Q 620 465 820 410 L 950 402" stroke="#2d3d2d" stroke-width="5" fill="none"/>
-        <!-- active marker -->
-        <circle cx="370" cy="280" r="11" fill="none" stroke="var(--green)" stroke-width="2"/>
-        <circle cx="370" cy="280" r="5" fill="var(--green)"/>
-        <circle cx="370" cy="280" r="16" fill="none" stroke="var(--green)" stroke-width="0.8" opacity="0.4"/>
-        <circle cx="370" cy="280" r="22" fill="none" stroke="var(--green)" stroke-width="0.5" opacity="0.2"/>
-        <!-- other markers -->
-        <circle cx="660" cy="415" r="6" fill="none" stroke="#3a5a2a" stroke-width="1.5"/><circle cx="660" cy="415" r="3" fill="#3a5a2a"/>
-        <circle cx="200" cy="560" r="6" fill="none" stroke="#3a5a2a" stroke-width="1.5"/><circle cx="200" cy="560" r="3" fill="#3a5a2a"/>
-        <circle cx="520" cy="650" r="6" fill="none" stroke="#3a5a2a" stroke-width="1.5"/><circle cx="520" cy="650" r="3" fill="#3a5a2a"/>
-        <!-- player -->
-        <circle cx="520" cy="415" r="8" fill="#fff" opacity="0.9"/>
-        <circle cx="520" cy="415" r="13" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.35"/>
-        <!-- compass -->
-        <text x="930" y="28" font-family="Barlow Condensed" font-size="14" fill="#3a4a3a" text-anchor="end">N</text>
-        <line x1="920" y1="14" x2="920" y2="34" stroke="#3a4a3a" stroke-width="1"/>
-      </svg>
       <!-- Mission overlay -->
       <div class="map-jobs-panel panel">
-        <div style="font-size:9px;color:#2a3a2a;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">// Mission History</div>
+        <div style="font-size:10px;color:#2a3a2a;letter-spacing:4px;text-transform:uppercase;margin-bottom:14px;">// Mission History</div>
         <div class="job-entry active-job">
           <div class="job-num">01</div>
           <div class="job-role">Project Coordinator</div>
@@ -676,14 +799,46 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow Condensed',
       </div>
       <!-- Character panel -->
       <div class="map-char-panel panel">
-        <div style="font-size:9px;color:#2a3a2a;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;">// Player</div>
-        <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;line-height:1.1;margin-bottom:8px;">Ujwal<br>Hannehra</div>
-        <div style="font-size:10px;color:var(--green);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">Project Coordinator</div>
-        <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:12px;"></div>
-        <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Location</div>
-        <div style="font-size:13px;color:#ccc;font-family:'Barlow',sans-serif;margin-bottom:10px;">Bengaluru, India</div>
-        <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Status</div>
-        <div style="font-size:13px;color:var(--green);font-family:'Barlow',sans-serif;margin-bottom:12px;">● Open to Offers</div>
+        <div style="font-size:10px;color:#2a3a2a;letter-spacing:4px;text-transform:uppercase;margin-bottom:18px;">// Player</div>
+
+        <div style="font-size:30px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;line-height:1.0;margin-bottom:10px;">Ujwal<br>Hannehra</div>
+        <div style="font-size:11px;color:var(--green);letter-spacing:4px;text-transform:uppercase;margin-bottom:20px;">Project Coordinator</div>
+
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:18px;"></div>
+
+        <div style="font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">Location</div>
+        <div style="font-size:14px;color:#ccc;font-family:'Barlow',sans-serif;margin-bottom:16px;">Bengaluru, India</div>
+
+        <div style="font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">Status</div>
+        <div style="font-size:14px;color:var(--green);font-family:'Barlow',sans-serif;margin-bottom:16px;">● Open to Offers</div>
+
+        <div style="font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">Education</div>
+        <div style="font-size:14px;color:#ccc;font-family:'Barlow',sans-serif;margin-bottom:4px;">BBA Marketing</div>
+        <div style="font-size:12px;color:#555;font-family:'Barlow',sans-serif;margin-bottom:16px;">Jain University, 2020–2023</div>
+
+        <div style="font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">Languages</div>
+        <div style="font-size:14px;color:#ccc;font-family:'Barlow',sans-serif;margin-bottom:20px;">EN · HI · KN</div>
+
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:18px;"></div>
+
+        <div style="font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">Experience</div>
+        <div style="display:flex;gap:0;margin-bottom:20px;">
+          <div style="flex:1;border-right:1px solid rgba(255,255,255,0.06);padding-right:14px;">
+            <div style="font-size:26px;font-weight:700;color:#fff;">2.5+</div>
+            <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-top:2px;">Years</div>
+          </div>
+          <div style="flex:1;padding-left:14px;">
+            <div style="font-size:26px;font-weight:700;color:#fff;">40+</div>
+            <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-top:2px;">Events/yr</div>
+          </div>
+        </div>
+
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:18px;"></div>
+
+        <div style="font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">Key Clients</div>
+        <div style="font-size:13px;color:#888;font-family:'Barlow',sans-serif;line-height:2;">
+          IBM<br>Salesforce<br>Commvault
+        </div>
       </div>
     </div>
   </div>
@@ -820,12 +975,11 @@ updateClock(); setInterval(updateClock, 1000);
   let lastTipAt = 0;
 
   const interval = setInterval(() => {
-    const speed = progress < 20 ? 1.8
-                : progress < 50 ? 0.42
-                : progress < 72 ? 0.25
-                : progress < 88 ? 0.13
-                : progress < 95 ? 0.06
-                : 1.8;
+    const speed = progress < 25 ? 4.5
+                : progress < 55 ? 2.2
+                : progress < 80 ? 1.1
+                : progress < 93 ? 0.5
+                : 4.0;
 
     progress = Math.min(100, progress + speed * (0.7 + Math.random() * 0.5));
     fill.style.width = progress + '%';
@@ -844,13 +998,156 @@ updateClock(); setInterval(updateClock, 1000);
       pct.textContent = '100%';
       setTimeout(() => {
         screen.classList.add('fade-out');
-        setTimeout(() => { screen.style.display = 'none'; }, 850);
+        setTimeout(() => {
+          screen.style.display = 'none';
+          startDriveIntro();
+        }, 850);
       }, 700);
     }
   }, 80);
 })();
 
-// ── AREA NOTIFICATION
+// ── SCROLL ZOOM INTRO
+function startDriveIntro() {
+  const intro      = document.getElementById('drive-intro');
+  const driveMap   = document.getElementById('drive-map');
+  const hint       = document.getElementById('scroll-hint');
+  const introName  = document.getElementById('intro-name');
+  const zoomProg   = document.getElementById('zoom-progress');
+  const zoomPctTxt = document.getElementById('zoom-pct-txt');
+  const pauseFlash = document.getElementById('pause-flash');
+  const topbar     = document.getElementById('topbar');
+  const content    = document.getElementById('content');
+  const footer     = document.getElementById('footer');
+
+  // zoom range: start zoomed way out, zoom into 1.0
+  const ZOOM_START = 0.18;
+  const ZOOM_END   = 1.0;
+  let   scrollAcc  = 0;       // accumulated scroll units
+  const SCROLL_NEEDED = 600;  // total scroll px to complete zoom
+  let   completed  = false;
+
+  // show scroll hint after 0.8s
+  setTimeout(() => hint.classList.add('show'), 800);
+
+  function applyZoom(progress) {
+    // progress 0→1
+    // easing: ease-in-out
+    const ease = progress < 0.5
+      ? 2 * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+    const scale = ZOOM_START + (ZOOM_END - ZOOM_START) * ease;
+
+    // also add slight blur when very close (like focus pulling)
+    const blurAmt = progress > 0.85 ? (1 - progress) * 8 : 0;
+    driveMap.style.transform = `scale(${scale})`;
+    driveMap.style.filter    = blurAmt > 0 ? `blur(${blurAmt}px)` : '';
+
+    // show name when 70%+
+    if(progress >= 0.7) {
+      introName.style.opacity = String(Math.min(1, (progress - 0.7) / 0.2));
+    }
+
+    // progress counter
+    const pct = Math.floor(progress * 100);
+    zoomPctTxt.textContent = pct + '%';
+    if(progress > 0.05 && !zoomProg.classList.contains('show')) {
+      zoomProg.classList.add('show');
+      hint.classList.remove('show');
+    }
+  }
+
+  // Fade intro in softly when it first appears
+  intro.style.opacity = '0';
+  intro.style.transition = 'opacity 0.6s ease';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { intro.style.opacity = '1'; });
+  });
+
+  function finishIntro() {
+    if(completed) return;
+    completed = true;
+
+    window.removeEventListener('wheel', onWheel, { passive: false });
+    window.removeEventListener('touchmove', onTouch, { passive: false });
+    window.removeEventListener('touchstart', onTouchStart);
+
+    zoomPctTxt.textContent = '100%';
+
+    // Step 1: snap zoom cleanly to 1
+    driveMap.style.transition = 'transform 0.4s cubic-bezier(0.25,0,0.1,1)';
+    driveMap.style.transform  = 'scale(1)';
+
+    // Step 2: map fades out, name stays
+    setTimeout(() => {
+      driveMap.style.transition = 'opacity 0.7s ease';
+      driveMap.style.opacity    = '0';
+      zoomProg.style.opacity    = '0';
+      hint.style.opacity        = '0';
+      // Make sure name is fully visible
+      introName.style.transition = 'opacity 0.5s ease';
+      introName.style.opacity    = '1';
+    }, 400);
+
+    // Step 3: name holds for ~1.4s then fades out
+    setTimeout(() => {
+      introName.style.transition = 'opacity 0.7s ease';
+      introName.style.opacity    = '0';
+    }, 1800);
+
+    // Step 4: fade entire intro to black
+    setTimeout(() => {
+      intro.style.transition = 'opacity 0.6s ease';
+      intro.style.opacity    = '0';
+    }, 2300);
+
+    // Step 5: topbar + content slide in while fading
+    setTimeout(() => {
+      topbar.classList.add('visible');
+    }, 2400);
+
+    setTimeout(() => {
+      content.classList.add('visible');
+      footer.classList.add('visible');
+    }, 2600);
+
+    setTimeout(() => {
+      intro.classList.add('hidden');
+    }, 3000);
+  }
+
+  // wheel handler
+  function onWheel(e) {
+    e.preventDefault();
+    if(completed) return;
+    scrollAcc += Math.abs(e.deltaY) * 0.9;
+    const progress = Math.min(1, scrollAcc / SCROLL_NEEDED);
+    applyZoom(progress);
+    if(progress >= 1) finishIntro();
+  }
+
+  // touch handler
+  let lastTouchY = 0;
+  function onTouchStart(e) { lastTouchY = e.touches[0].clientY; }
+  function onTouch(e) {
+    e.preventDefault();
+    if(completed) return;
+    const dy = lastTouchY - e.touches[0].clientY;
+    lastTouchY = e.touches[0].clientY;
+    scrollAcc += Math.abs(dy) * 2;
+    const progress = Math.min(1, scrollAcc / SCROLL_NEEDED);
+    applyZoom(progress);
+    if(progress >= 1) finishIntro();
+  }
+
+  // set initial zoom
+  applyZoom(0);
+
+  window.addEventListener('wheel', onWheel, { passive: false });
+  window.addEventListener('touchstart', onTouchStart, { passive: true });
+  window.addEventListener('touchmove', onTouch, { passive: false });
+}
 function showArea(name, sub){
   const el = document.getElementById('area-notif');
   document.getElementById('area-name').textContent = name;
