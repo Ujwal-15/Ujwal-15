@@ -638,121 +638,150 @@ footer{padding:40px 4% 50px;border-top:1px solid rgba(255,255,255,0.08);}
 /* ══════════════════════════════════════
    RESPONSIVE — MOBILE & TABLET
 ══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   TABLET — max 900px
+══════════════════════════════════════ */
 @media (max-width:900px){
-  /* hero right panel hides on tablet, content goes full width */
   .hero-right{display:none;}
   #hero-content{max-width:100%;}
   .hero-inner{padding:0 5%;}
-
-  /* skills single column */
   .skills-panel{grid-template-columns:1fr;}
-
-  /* contact stack */
   .contact-box{grid-template-columns:1fr;}
   .cbox-left{border-right:none;border-bottom:1px solid rgba(255,255,255,0.07);padding:36px 32px;}
   .cbox-right{padding:32px 32px;}
-
-  /* genre grid — 2 columns */
-  .genre-grid{
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:170px 170px 170px;
-  }
-  /* experience row back to slider on tablet */
-  #experience-row .nf-slider{
-    display:flex;overflow-x:auto;grid-template-columns:unset;
-  }
+  .genre-grid{grid-template-columns:1fr 1fr;grid-template-rows:170px 170px 170px;}
+  .genre-tile--large{grid-row:span 1;grid-column:span 2;}
+  /* experience: back to scrollable slider */
+  #experience-row .nf-slider{display:flex;overflow-x:auto;grid-template-columns:unset;}
   #experience-row .nf-card{width:200px;flex-shrink:0;}
   #experience-row .card-img{height:130px;}
+  #experience-row .nf-card:hover{transform:scale(1.28);}
 }
 
+/* ══════════════════════════════════════
+   MOBILE — max 640px
+══════════════════════════════════════ */
 @media (max-width:640px){
-  /* cursor off on touch */
-  #cursor{display:none;}
-  body{cursor:auto;}
-  button,a{cursor:pointer;}
 
-  /* navbar */
+  /* ── NUCLEAR CURSOR FIX — overrides every inline cursor:none ── */
+  *{cursor:auto !important;}
+  button,a,[onclick],.nf-card,.profile-pick,.mood-btn{cursor:pointer !important;}
+  #cursor{display:none !important;}
+
+  /* ── NAVBAR ── */
+  #navbar{padding:0 5%;height:56px;}
   .nav-links{display:none;}
-  .netflix-wordmark{font-size:26px;}
+  .netflix-wordmark{font-size:24px;}
   .nav-avatar-name{display:none;}
-  #navbar{padding:0 5%;}
+  .nav-avatar{width:28px;height:28px;font-size:12px;}
 
-  /* hero */
-  #hero{padding-top:80px;padding-bottom:40px;}
-  .hero-inner{padding:0 5%;}
+  /* ── WHO SCREEN ── */
+  .who-title{font-size:22px;margin-bottom:28px;}
+  .profiles-row{gap:12px;flex-wrap:wrap;justify-content:center;}
+  .profile-pick-avatar{width:80px;height:80px;font-size:30px;}
+  .profile-pick-name{font-size:12px;}
+
+  /* ── HERO ── */
+  #hero{
+    min-height:auto;
+    padding:80px 0 50px;
+  }
+  .hero-inner{padding:0 5%;flex-direction:column;}
   .hero-right{display:none;}
-  .hero-name{font-size:clamp(52px,13vw,80px);line-height:0.9;}
-  .hero-desc{font-size:14px;}
-  .btn-white,.btn-grey{padding:10px 20px;font-size:14px;}
-  #hero::after{height:60px;}
+  #hero-content{max-width:100%;}
+  .hero-name{font-size:clamp(48px,15vw,72px);line-height:0.9;margin-bottom:12px;}
+  .hero-chips{gap:8px;margin-bottom:12px;}
+  .chip-tag{font-size:10px;padding:2px 8px;}
+  .hero-desc{font-size:13px;line-height:1.7;margin-bottom:22px;}
+  .hero-btns{gap:8px;flex-wrap:wrap;}
+  .btn-white,.btn-grey{padding:10px 18px;font-size:13px;}
+  #hero::after{height:50px;}
 
-  /* row labels */
-  .nf-row-label{font-size:16px;}
-  .nf-row{padding-bottom:10px;}
+  /* ── ROWS ── */
+  .nf-row{padding-bottom:8px;margin-bottom:0;}
+  .nf-row-label{font-size:16px;padding:0 5%;margin-bottom:8px;}
 
-  /* experience — slim horizontal slider */
+  /* ── EXPERIENCE CARDS ── */
   #experience-row .nf-slider{
     display:flex;overflow-x:auto;
     grid-template-columns:unset;
-    padding:0 5%;
+    padding:0 5%;gap:6px;
   }
-  #experience-row .nf-card{width:155px;flex-shrink:0;}
-  #experience-row .card-img{height:100px;}
-  #experience-row .card-img-num{font-size:64px;}
-  .nf-card{width:155px;}
-  .nf-slider{gap:3px;padding:0 5%;}
+  #experience-row .nf-card{width:150px;flex-shrink:0;}
+  #experience-row .card-img{height:95px;}
+  #experience-row .card-img-num{font-size:60px;}
+  #experience-row .nf-card:hover{transform:scale(1.05);}
+  .nf-slider{padding:0 5%;gap:6px;}
+  .card-wordmark{font-size:20px;}
 
-  /* skills single column */
-  .skills-panel{grid-template-columns:1fr;}
-  #skills-row{padding:0 5% 36px;}
-  .skill-block{padding:18px 20px;}
-  .skill-score{font-size:38px;width:52px;}
-  .skill-name-lg{font-size:14px;}
+  /* ── SKILLS ── */
+  #skills-row{padding:0 5% 40px;}
+  .skills-panel{grid-template-columns:1fr;gap:2px;}
+  .skill-block{padding:18px 16px;gap:16px;}
+  .skill-score{font-size:36px;width:50px;}
+  .skill-name-lg{font-size:13px;}
+  .skill-desc{font-size:12px;}
 
-  /* genre grid — full stack */
+  /* ── HOBBIES GENRE GRID ── */
+  #hobbies-row{padding:0 0 40px;}
   .genre-grid{
     padding:0 5%;
-    grid-template-columns:1fr;
-    grid-template-rows:160px 130px 130px 130px 130px;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:140px 120px 120px;
+    gap:4px;
   }
-  .genre-tile--large{grid-row:span 1;grid-column:span 1;}
-  .genre-tile--large .genre-label{font-size:36px;}
-  .genre-tile--large .genre-inner{padding:16px 18px;}
+  .genre-tile--large{grid-row:span 1;grid-column:span 2;}
+  .genre-tile--large .genre-label{font-size:34px;}
+  .genre-tile--large .genre-sub{font-size:11px;}
+  .genre-tile--large .genre-inner{padding:14px 16px;}
+  .genre-tile:not(.genre-tile--large) .genre-label{font-size:22px;}
   .genre-watermark{display:none;}
-  #hobbies-row{padding:0 0 36px;}
 
-  /* contact */
-  #contact-row{padding:20px 5% 50px;}
-  .contact-box{grid-template-columns:1fr;}
-  .cbox-left{padding:26px 22px;border-right:none;border-bottom:1px solid rgba(255,255,255,0.07);}
-  .cbox-right{padding:22px 22px;}
-  .cbox-title{font-size:34px;}
-
-  /* rec */
-  #rec-section{padding:20px 5% 50px;}
-  .rec-box{padding:28px 22px;}
-  .rec-title{font-size:32px;}
+  /* ── RECOMMENDATION ── */
+  #rec-section{padding:16px 5% 48px;}
+  .rec-box{padding:28px 20px;}
+  .rec-title{font-size:30px;}
+  .rec-sub{font-size:13px;margin-bottom:28px;}
   .rec-moods{gap:6px;}
   .mood-btn{padding:8px 12px;font-size:12px;}
-  .rec-email-row{flex-direction:column;}
-  .rec-send-btn{width:100%;}
+  .rec-next{padding:11px 24px;font-size:12px;}
+  .rec-email-row{flex-direction:column;max-width:100%;}
+  .rec-send-btn{width:100%;padding:13px;}
 
-  /* modal — full screen */
-  #modal-overlay{padding:0;}
-  #modal-box{max-height:100vh;border-radius:0;}
-  .mbhero{height:200px;}
-  #m-title{font-size:34px;}
-  .mbbody{padding:16px 18px 28px;}
-  #m-desc{font-size:13px;}
+  /* ── CONTACT ── */
+  #contact-row{padding:16px 5% 60px;}
+  .contact-box{grid-template-columns:1fr;}
+  .cbox-left{
+    padding:28px 22px;
+    border-right:none;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  .cbox-right{padding:24px 22px;}
+  .cbox-title{font-size:34px;line-height:1;}
+  .cbox-desc{font-size:13px;}
+  .finput,.ftextarea{font-size:16px;} /* 16px prevents iOS zoom on focus */
+  .ftextarea{min-height:80px;}
+  .fsend{font-size:11px;padding:14px;}
 
-  /* footer */
-  .footer-inner{flex-direction:column;align-items:flex-start;gap:14px;}
-  .footer-links{flex-direction:column;gap:8px;}
+  /* ── MODAL ── */
+  #modal-overlay{padding:0;align-items:flex-end;}
+  #modal-box{
+    max-height:92vh;border-radius:12px 12px 0 0;
+    width:100%;border-bottom-left-radius:0;border-bottom-right-radius:0;
+  }
+  .mbhero{height:180px;}
+  #m-title{font-size:32px;}
+  .mbhero-content{padding:20px 20px;}
+  .mbbody{padding:20px 20px 36px;}
+  #m-desc{font-size:13px;line-height:1.75;}
+  .m-tags{gap:5px;}
+  .m-tag{font-size:10px;padding:3px 10px;}
 
-  /* who screen */
-  .profiles-row{gap:14px;}
-  .profile-pick-avatar{width:85px;height:85px;font-size:34px;}
-  .who-title{font-size:24px;margin-bottom:32px;}
+  /* ── FOOTER ── */
+  footer{padding:28px 5%;}
+  .footer-inner{flex-direction:column;align-items:flex-start;gap:20px;}
+  .footer-links{flex-direction:column;gap:10px;}
+  .footer-logo{font-size:18px;}
 }
 
 /* ── SCROLL FADE ── */
