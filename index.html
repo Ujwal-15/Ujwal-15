@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ujwal Hannehra — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --green:#6bbf39;--green-dark:#4a8c28;--green-glow:rgba(107,191,57,0.35);
+  --panel:rgba(8,13,8,0.88);--panel-border:rgba(255,255,255,0.07);
+  --tab-h:44px;--bar-h:54px;
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Barlow Condensed',sans-serif;cursor:none;}
+
+/* ── CUSTOM CURSOR ── */
+#cursor{position:fixed;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);}
+#cursor svg{display:block;}
+
+/* ── BG ── */
+#bg{position:fixed;inset:0;z-index:0;
+  background:linear-gradient(160deg,#0d1a0d 0%,#0a150a 40%,#080e08 70%,#050805 100%);}
+#bg::before{content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 75% 40%,rgba(25,55,12,0.2) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 40% at 20% 65%,rgba(15,40,8,0.15) 0%,transparent 60%);}
+
+/* scanlines */
+#scanlines{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);}
+
+/* ── MAP SVG (shared) ── */
+.map-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+
+/* ── TOP BAR ── */
+#topbar{position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(4,8,4,0.92);backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,255,255,0.06);}
+#inforow{display:flex;justify-content:space-between;align-items:center;
+  padding:7px 28px 6px;border-bottom:1px solid rgba(255,255,255,0.04);}
+#player-name-top{font-size:12px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase;}
+#pause-label{font-size:10px;font-weight:700;letter-spacing:6px;color:var(--green);text-transform:uppercase;text-align:right;}
+#time-label{font-size:10px;color:#3a3a3a;letter-spacing:2px;text-align:right;margin-top:1px;}
+#tabs{display:flex;}
+.tab{flex:1;height:var(--tab-h);background:transparent;border:none;
+  border-right:1px solid rgba(255,255,255,0.05);
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.35);
+  cursor:none;transition:all 0.18s;position:relative;}
+.tab:last-child{border-right:none;}
+.tab.active{background:rgba(255,255,255,0.94);color:#000;font-weight:700;}
+.tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green);}
+.tab:not(.active):hover{color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.03);}
+
+/* ── CONTENT ── */
+#content{position:fixed;top:calc(var(--bar-h) + var(--tab-h));left:0;right:0;bottom:30px;z-index:10;overflow-y:auto;}
+#content::-webkit-scrollbar{width:3px;}
+#content::-webkit-scrollbar-thumb{background:var(--green-dark);}
+.section{display:none;animation:fadeUp 0.28s ease forwards;height:100%;}
+.section.active{display:flex;flex-direction:column;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* glass card */
+.panel{background:var(--panel);border:1px solid var(--panel-border);backdrop-filter:blur(18px);}
+
+/* area notif */
+#area-notif{position:fixed;left:50%;transform:translateX(-50%);bottom:50px;z-index:500;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.5s ease;}
+#area-notif.show{opacity:1;}
+#area-notif.hide{opacity:0;}
+#area-name{font-size:20px;font-weight:700;color:#fff;letter-spacing:6px;text-transform:uppercase;text-shadow:0 0 20px rgba(107,191,57,0.4);}
+#area-sub{font-size:10px;color:#888;letter-spacing:4px;text-transform:uppercase;margin-top:3px;}
+
+/* ── GTA HUD (bottom-right) ── */
+#hud{position:fixed;right:24px;bottom:44px;z-index:200;text-align:right;pointer-events:none;}
+.hud-bar-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:5px;}
+.hud-bar-label{font-size:9px;color:#888;letter-spacing:2px;text-transform:uppercase;}
+.hud-bar-track{width:80px;height:5px;background:rgba(255,255,255,0.08);position:relative;}
+.hud-bar-fill{height:100%;transition:width 1s ease;}
+.hud-health .hud-bar-fill{background:#6bbf39;width:90%;}
+.hud-armor .hud-bar-fill{background:#6699cc;width:75%;}
+.hud-wanted{display:flex;justify-content:flex-end;gap:3px;margin-top:4px;}
+.hud-star{font-size:12px;color:#222;}
+.hud-star.lit{color:var(--green);}
+
+/* ── MINI MAP (bottom-left) ── */
+#minimap{
+  position:fixed;left:24px;bottom:44px;z-index:200;
+  width:110px;height:110px;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:50%;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.9),0 0 20px rgba(0,0,0,0.9);
+  opacity:0.85;
+}
+#minimap svg{width:100%;height:100%;display:block;}
+#minimap-label{position:fixed;left:24px;bottom:158px;z-index:200;
+  font-size:8px;color:#444;letter-spacing:3px;text-transform:uppercase;}
+
+
+
+/* ── ABOUT layout ── */
+#about{position:relative;flex:1;}
+#about-map-bg{position:absolute;inset:0;z-index:0;opacity:0.18;overflow:hidden;}
+#about-content{position:relative;z-index:1;display:flex;gap:0;height:100%;}
+#about-left{flex:1;padding:40px 44px 200px 44px;}
+#about-right{width:230px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.06);
+  padding:28px 20px;background:rgba(0,0,0,0.55);backdrop-filter:blur(20px);overflow-y:auto;}
+
+.eyebrow{font-size:9px;letter-spacing:6px;color:var(--green);text-transform:uppercase;margin-bottom:10px;}
+.player-name{font-size:54px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;line-height:0.95;margin-bottom:12px;}
+.name-rule{width:40px;height:2px;background:var(--green);margin:14px 0 16px;}
+.player-title{font-size:12px;letter-spacing:4px;color:#999;text-transform:uppercase;margin-bottom:22px;font-weight:500;}
+.player-bio{font-family:'Barlow',sans-serif;font-size:14px;color:#bbb;line-height:1.85;max-width:470px;margin-bottom:32px;font-weight:300;}
+.stats-row{display:flex;}
+.stat-box{padding-right:26px;margin-right:26px;border-right:1px solid rgba(255,255,255,0.1);}
+.stat-box:last-child{border-right:none;padding-right:0;margin-right:0;}
+.stat-val{font-size:28px;font-weight:700;color:#fff;}
+.stat-label{font-size:9px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+
+.s-header{font-size:9px;color:#333;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;}
+.s-row{margin-bottom:13px;}
+.s-key{font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;}
+.s-val{font-size:13px;color:#ccc;margin-top:2px;font-family:'Barlow',sans-serif;}
+.s-divider{height:1px;background:rgba(255,255,255,0.05);margin:14px 0;}
+
+/* ── BRIEF (map) ── */
+#brief{position:relative;flex:1;}
+#brief-map-wrap{position:absolute;inset:0;z-index:0;}
+.map-jobs-panel{position:absolute;top:18px;left:18px;width:330px;padding:16px;z-index:10;max-height:calc(100% - 36px);overflow-y:auto;}
+.map-char-panel{position:absolute;top:18px;right:18px;width:210px;padding:16px;z-index:10;}
+.job-entry{padding:9px 11px;margin-bottom:7px;border-left:3px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.02);cursor:none;transition:border-color 0.18s;}
+.job-entry.active-job{border-left-color:var(--green);}
+.job-entry:hover{border-left-color:rgba(107,191,57,0.4);}
+.job-num{font-size:9px;color:rgba(255,255,255,0.15);letter-spacing:2px;margin-bottom:3px;}
+.job-role{font-size:13px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.job-badge{display:inline-block;font-size:8px;letter-spacing:2px;padding:1px 7px;text-transform:uppercase;margin-bottom:4px;}
+.badge-active{background:var(--green);color:#fff;}
+.badge-done{background:rgba(107,191,57,0.1);color:var(--green);}
+.job-meta{font-size:11px;color:#666;font-family:'Barlow',sans-serif;font-weight:300;}
+.job-desc{font-size:12px;color:#888;font-family:'Barlow',sans-serif;font-weight:300;line-height:1.6;margin-top:5px;}
+
+/* ── STATS ── */
+#stats{overflow-y:auto;}
+#stats-inner{padding:36px 44px 200px 44px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px 52px;margin-bottom:26px;}
+.cat-header{font-size:9px;color:var(--green);letter-spacing:4px;text-transform:uppercase;
+  margin-bottom:13px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.skill-row{margin-bottom:11px;}
+.skill-top{display:flex;justify-content:space-between;margin-bottom:4px;}
+.skill-name{font-size:12px;color:#bbb;font-family:'Barlow',sans-serif;font-weight:300;}
+.skill-pct{font-size:11px;color:#555;}
+.skill-track{height:3px;background:rgba(255,255,255,0.06);}
+.skill-fill{height:100%;background:var(--green);box-shadow:0 0 8px var(--green-glow);transition:width 1.2s ease;}
+
+/* ── OPTIONS ── */
+#options{overflow-y:auto;}
+#options-inner{padding:36px 44px 200px 44px;display:flex;gap:52px;}
+#contact-left{flex:1;max-width:450px;}
+.opts-eyebrow{font-size:9px;letter-spacing:5px;color:var(--green);text-transform:uppercase;margin-bottom:22px;}
+.contact-panel{background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.07);
+  padding:18px 18px;margin-bottom:20px;backdrop-filter:blur(10px);}
+.incoming{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;transition:opacity 0.3s;}
+.incoming.on{color:var(--green);opacity:1;}.incoming.off{opacity:0;}
+.contact-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.contact-k{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:2px;}
+.contact-v{font-size:13px;color:#ccc;font-family:'Barlow',sans-serif;}
+.form-label{font-size:9px;color:#555;letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;margin-top:11px;}
+.form-input,.form-textarea{width:100%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.07);
+  color:#fff;padding:9px 11px;font-size:13px;font-family:'Barlow',sans-serif;outline:none;resize:vertical;transition:border-color 0.18s;}
+.form-input:focus,.form-textarea:focus{border-color:var(--green);}
+.send-btn{margin-top:11px;background:var(--green);color:#fff;border:none;
+  padding:11px 30px;font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  cursor:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;transition:background 0.18s;}
+.send-btn:hover{background:var(--green-dark);}
+
+/* ── FOOTER ── */
+#footer{position:fixed;bottom:0;left:0;right:0;height:30px;z-index:100;
+  background:rgba(3,6,3,0.92);backdrop-filter:blur(10px);
+  border-top:1px solid rgba(255,255,255,0.05);
+  display:flex;align-items:center;justify-content:space-between;padding:0 28px;}
+.footer-txt{font-size:9px;color:#2a2a2a;letter-spacing:3px;text-transform:uppercase;}
+
+/* toast / flash */
+#toast{position:fixed;top:110px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#fff;padding:11px 24px;
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;z-index:9999;display:none;white-space:nowrap;}
+#flash{position:fixed;inset:0;background:rgba(107,191,57,0.15);z-index:9998;display:none;pointer-events:none;}
+
+/* ── LOADING SCREEN ── */
+#loading{
+  position:fixed;inset:0;z-index:10000;
+  background:#000;
+  display:flex;flex-direction:column;
+  pointer-events:all;
+  transition:opacity 0.8s ease;
+}
+#loading.fade-out{opacity:0;pointer-events:none;}
+#loading-char{
+  flex:1;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#0a130a 0%,#060d06 50%,#020402 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+/* subtle grid lines like GTA map in bg */
+#loading-char::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(107,191,57,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(107,191,57,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+/* vignette */
+#loading-char::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 30%,rgba(0,0,0,0.85) 100%);
+  pointer-events:none;
+}
+#loading-logo{
+  position:absolute;top:28px;left:32px;z-index:3;
+  font-size:10px;font-weight:700;letter-spacing:6px;color:rgba(255,255,255,0.15);
+  text-transform:uppercase;
+}
+#loading-center{
+  position:relative;z-index:3;
+  text-align:center;
+  opacity:0;
+  transition:opacity 1s ease 0.3s;
+}
+#loading-center.show{opacity:1;}
+#loading-eyebrow{
+  font-size:10px;letter-spacing:8px;color:var(--green);
+  text-transform:uppercase;margin-bottom:18px;
+  font-weight:500;
+}
+#loading-big-name{
+  font-size:clamp(72px,10vw,130px);font-weight:700;color:#fff;
+  letter-spacing:4px;text-transform:uppercase;line-height:0.9;
+  margin-bottom:20px;
+  text-shadow:0 0 80px rgba(107,191,57,0.15);
+}
+#loading-rule{
+  width:60px;height:2px;background:var(--green);
+  margin:0 auto 18px;
+}
+#loading-big-title{
+  font-size:13px;letter-spacing:7px;color:#666;
+  text-transform:uppercase;font-weight:400;
+}
+/* bottom bar */
+#loading-bottom{
+  height:110px;
+  background:#000;
+  border-top:1px solid #0f1a0f;
+  padding:18px 36px 16px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+#loading-tip-label{
+  font-size:9px;letter-spacing:4px;color:var(--green);
+  text-transform:uppercase;margin-bottom:5px;opacity:0.7;
+}
+#loading-tip{
+  font-family:'Barlow',sans-serif;font-size:13px;color:#777;
+  line-height:1.5;font-weight:300;max-width:700px;
+  transition:opacity 0.5s ease;
+}
+#loading-progress-row{
+  display:flex;align-items:center;justify-content:space-between;margin-top:12px;
+}
+#loading-progress-label{
+  font-size:9px;letter-spacing:3px;color:#333;text-transform:uppercase;
+}
+#loading-bar-track{flex:1;height:2px;background:#111;margin:0 16px;}
+#loading-bar-fill{
+  height:100%;background:var(--green);width:0%;
+  transition:width 0.1s linear;
+  box-shadow:0 0 10px var(--green-glow);
+}
+#loading-pct{font-size:10px;color:#444;letter-spacing:2px;min-width:36px;text-align:right;}
+
+/* ── CHARACTER SWITCH OVERLAY ── */
+#char-switch{
+  position:fixed;inset:0;z-index:5000;
+  pointer-events:none;opacity:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0); /* starts transparent */
+  transition:background 0.2s ease;
+}
+#char-switch.active{
+  pointer-events:all;
+  background:rgba(0,0,0,0.92); /* near-black when active */
+}
+/* the spinning globe / aerial zoom effect */
+#char-switch-map{
+  position:absolute;inset:0;
+  transform:scale(3);
+  opacity:0;
+  transition:none;
+}
+#char-switch-map svg{width:100%;height:100%;display:block;}
+/* heavy blur + dark vignette over the zoom map */
+#char-switch-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.95) 100%);
+  backdrop-filter:blur(8px);
+  pointer-events:none;
+}
+/* the four character circles at bottom like GTA V */
+#char-switch-bar{
+  position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+  display:flex;gap:20px;align-items:flex-end;
+  opacity:0;
+}
+.char-circle{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:all 0.3s ease;
+}
+.char-dot{
+  width:44px;height:44px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.2);
+  background:rgba(0,0,0,0.6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.4);
+  transition:all 0.3s;
+}
+.char-circle.selected .char-dot{
+  border-color:var(--green);color:#fff;
+  background:rgba(107,191,57,0.2);
+  box-shadow:0 0 20px rgba(107,191,57,0.4);
+  width:56px;height:56px;font-size:13px;
+}
+.char-label{font-size:9px;letter-spacing:3px;color:#666;text-transform:uppercase;}
+.char-circle.selected .char-label{color:var(--green);}
+
+/* name reveal during switch */
+#char-switch-name{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;opacity:0;
+}
+#csn-title{font-size:10px;letter-spacing:5px;color:var(--green);text-transform:uppercase;margin-bottom:8px;}
+#csn-name{font-size:38px;font-weight:700;color:#fff;letter-spacing:3px;text-transform:uppercase;line-height:1;}
+
+@keyframes switchZoomIn{
+  0%{transform:scale(3.5);opacity:0;}
+  30%{opacity:0.4;}
+  100%{transform:scale(1.1);opacity:0.3;}
+}
+@keyframes switchFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes nameReveal{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0.92);}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+}
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor">
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- outer ring -->
+    <circle cx="16" cy="16" r="13" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+    <!-- cross hairs -->
+    <line x1="16" y1="2" x2="16" y2="10" stroke="white" stroke-width="1.5"/>
+    <line x1="16" y1="22" x2="16" y2="30" stroke="white" stroke-width="1.5"/>
+    <line x1="2" y1="16" x2="10" y2="16" stroke="white" stroke-width="1.5"/>
+    <line x1="22" y1="16" x2="30" y2="16" stroke="white" stroke-width="1.5"/>
+    <!-- inner dot -->
+    <circle cx="16" cy="16" r="2" fill="var(--green)"/>
+    <!-- inner ring -->
+    <circle cx="16" cy="16" r="5" stroke="rgba(107,191,57,0.7)" stroke-width="1"/>
+  </svg>
+</div>
+
+<!-- ── LOADING SCREEN ── -->
+<div id="loading">
+  <div id="loading-char">
+    <div id="loading-logo">Ujwal Hannehra</div>
+    <div id="loading-center">
+      <div id="loading-eyebrow">Now Loading</div>
+      <div id="loading-big-name">Ujwal<br>Hannehra</div>
+      <div id="loading-rule"></div>
+      <div id="loading-big-title">Project Coordinator</div>
+    </div>
+  </div>
+  <div id="loading-bottom">
+    <div>
+      <div id="loading-tip-label">Loading Character</div>
+      <div id="loading-tip">Coordinating teams. Delivering experiences. Repeat.</div>
+    </div>
+    <div id="loading-progress-row">
+      <div id="loading-progress-label">Loading</div>
+      <div id="loading-bar-track"><div id="loading-bar-fill"></div></div>
+      <div id="loading-pct">0%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHARACTER SWITCH OVERLAY ── -->
+<div id="char-switch">
+  <div id="char-switch-map">
+    <svg width="100%" height="100%" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1400" height="800" fill="#0a130a"/>
+      <g stroke="#1a2a1a" stroke-width="1" fill="none" opacity="0.8">
+        <line x1="0" y1="100" x2="1400" y2="100"/><line x1="0" y1="200" x2="1400" y2="200"/>
+        <line x1="0" y1="300" x2="1400" y2="300"/><line x1="0" y1="400" x2="1400" y2="400"/>
+        <line x1="0" y1="500" x2="1400" y2="500"/><line x1="0" y1="600" x2="1400" y2="600"/>
+        <line x1="0" y1="700" x2="1400" y2="700"/>
+        <line x1="100" y1="0" x2="100" y2="800"/><line x1="200" y1="0" x2="200" y2="800"/>
+        <line x1="300" y1="0" x2="300" y2="800"/><line x1="400" y1="0" x2="400" y2="800"/>
+        <line x1="500" y1="0" x2="500" y2="800"/><line x1="600" y1="0" x2="600" y2="800"/>
+        <line x1="700" y1="0" x2="700" y2="800"/><line x1="800" y1="0" x2="800" y2="800"/>
+        <line x1="900" y1="0" x2="900" y2="800"/><line x1="1000" y1="0" x2="1000" y2="800"/>
+        <line x1="1100" y1="0" x2="1100" y2="800"/><line x1="1200" y1="0" x2="1200" y2="800"/>
+        <line x1="1300" y1="0" x2="1300" y2="800"/>
+      </g>
+      <g stroke="#2a3d2a" stroke-width="3" fill="none">
+        <line x1="0" y1="250" x2="1400" y2="250"/><line x1="0" y1="550" x2="1400" y2="550"/>
+        <line x1="350" y1="0" x2="350" y2="800"/><line x1="750" y1="0" x2="750" y2="800"/>
+        <line x1="0" y1="800" x2="700" y2="0"/><line x1="400" y1="800" x2="1400" y2="0"/>
+      </g>
+      <g fill="#0d1a0d">
+        <rect x="110" y="110" width="90" height="80"/><rect x="215" y="110" width="80" height="80"/>
+        <rect x="360" y="110" width="90" height="80"/><rect x="760" y="110" width="90" height="80"/>
+        <rect x="1110" y="110" width="90" height="80"/><rect x="110" y="560" width="90" height="80"/>
+        <rect x="360" y="560" width="100" height="80"/><rect x="760" y="560" width="90" height="80"/>
+      </g>
+      <path d="M 0 420 Q 300 390 600 430 Q 900 470 1200 410 L 1400 405" stroke="#2d3d2d" stroke-width="5" fill="none"/>
+      <!-- glowing centre point -->
+      <circle cx="700" cy="400" r="6" fill="var(--green)"/>
+      <circle cx="700" cy="400" r="14" fill="none" stroke="var(--green)" stroke-width="1.5" opacity="0.6"/>
+      <circle cx="700" cy="400" r="24" fill="none" stroke="var(--green)" stroke-width="0.8" opacity="0.3"/>
+      <circle cx="700" cy="400" r="40" fill="none" stroke="var(--green)" stroke-width="0.5" opacity="0.15"/>
+    </svg>
+  </div>
+  <div id="char-switch-vignette"></div>
+  <div id="char-switch-name">
+    <div id="csn-title">Switching To</div>
+    <div id="csn-name">ABOUT</div>
+  </div>
+  <div id="char-switch-bar">
+    <div class="char-circle" id="cc-about">
+      <div class="char-dot">A</div>
+      <div class="char-label">About</div>
+    </div>
+    <div class="char-circle" id="cc-brief">
+      <div class="char-dot">B</div>
+      <div class="char-label">Brief</div>
+    </div>
+    <div class="char-circle" id="cc-stats">
+      <div class="char-dot">S</div>
+      <div class="char-label">Stats</div>
+    </div>
+    <div class="char-circle" id="cc-options">
+      <div class="char-dot">O</div>
+      <div class="char-label">Options</div>
+    </div>
+  </div>
+</div>
+
+<div id="bg"></div>
+<div id="scanlines"></div>
+
+<!-- ── TOP BAR ── -->
+<div id="topbar">
+  <div id="inforow">
+    <div id="player-name-top">Ujwal Hannehra</div>
+    <div>
+      <div id="pause-label">Pause Menu</div>
+      <div id="time-label">MON 01:16 PM · Bengaluru, India</div>
+    </div>
+  </div>
+  <div id="tabs">
+    <button class="tab active" data-tab="about" data-area="Downtown" data-areasub="Player Profile">ABOUT</button>
+    <button class="tab" data-tab="brief" data-area="Mission Board" data-areasub="Career History">BRIEF</button>
+    <button class="tab" data-tab="stats" data-area="Stat Screen" data-areasub="Skills & Abilities">STATS</button>
+    <button class="tab" data-tab="options" data-area="Communication" data-areasub="Get In Touch">OPTIONS</button>
+  </div>
+</div>
+
+<!-- ── GTA HUD ── -->
+<div id="hud">
+  <div class="hud-wanted">
+    <span class="hud-star lit">★</span><span class="hud-star lit">★</span>
+    <span class="hud-star lit">★</span><span class="hud-star lit">★</span>
+    <span class="hud-star lit">★</span><span class="hud-star">★</span>
+  </div>
+</div>
+
+<!-- ── MINI MAP ── -->
+<div id="minimap-label">Bengaluru</div>
+<div id="minimap">
+  <svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+    <rect width="130" height="130" fill="#0a130a"/>
+    <g stroke="#1a2a1a" stroke-width="0.5" fill="none">
+      <line x1="0" y1="26" x2="130" y2="26"/><line x1="0" y1="52" x2="130" y2="52"/>
+      <line x1="0" y1="78" x2="130" y2="78"/><line x1="0" y1="104" x2="130" y2="104"/>
+      <line x1="26" y1="0" x2="26" y2="130"/><line x1="52" y1="0" x2="52" y2="130"/>
+      <line x1="78" y1="0" x2="78" y2="130"/><line x1="104" y1="0" x2="104" y2="130"/>
+    </g>
+    <g stroke="#243024" stroke-width="1.5" fill="none">
+      <line x1="0" y1="52" x2="130" y2="52"/><line x1="0" y1="78" x2="130" y2="78"/>
+      <line x1="52" y1="0" x2="52" y2="130"/><line x1="78" y1="0" x2="78" y2="130"/>
+    </g>
+    <g fill="#0d180d">
+      <rect x="28" y="28" width="18" height="18"/><rect x="55" y="28" width="18" height="18"/>
+      <rect x="82" y="28" width="18" height="18"/><rect x="28" y="55" width="18" height="18"/>
+      <rect x="82" y="55" width="18" height="18"/><rect x="28" y="82" width="18" height="18"/>
+      <rect x="55" y="82" width="18" height="18"/><rect x="82" y="82" width="18" height="18"/>
+    </g>
+    <!-- player blip -->
+    <circle cx="65" cy="65" r="4" fill="#fff"/>
+    <circle cx="65" cy="65" r="7" fill="none" stroke="#fff" stroke-width="0.8" opacity="0.4"/>
+    <!-- job markers -->
+    <circle cx="52" cy="52" r="3" fill="var(--green)"/>
+    <circle cx="78" cy="65" r="3" fill="#4a6a3a"/>
+    <circle cx="40" cy="80" r="3" fill="#4a6a3a"/>
+  </svg>
+</div>
+
+
+<div id="area-notif">
+  <div id="area-name">Downtown</div>
+  <div id="area-sub">Player Profile</div>
+</div>
+
+<!-- ── CONTENT ── -->
+<div id="content">
+
+  <!-- ABOUT -->
+  <div id="about" class="section active">
+    <!-- map as faded bg -->
+    <div id="about-map-bg">
+      <svg width="100%" height="100%" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1400" height="800" fill="#0a130a"/>
+        <g stroke="#1a2a1a" stroke-width="1" fill="none" opacity="0.7">
+          <line x1="0" y1="100" x2="1400" y2="100"/><line x1="0" y1="200" x2="1400" y2="200"/>
+          <line x1="0" y1="300" x2="1400" y2="300"/><line x1="0" y1="400" x2="1400" y2="400"/>
+          <line x1="0" y1="500" x2="1400" y2="500"/><line x1="0" y1="600" x2="1400" y2="600"/>
+          <line x1="0" y1="700" x2="1400" y2="700"/>
+          <line x1="100" y1="0" x2="100" y2="800"/><line x1="200" y1="0" x2="200" y2="800"/>
+          <line x1="300" y1="0" x2="300" y2="800"/><line x1="400" y1="0" x2="400" y2="800"/>
+          <line x1="500" y1="0" x2="500" y2="800"/><line x1="600" y1="0" x2="600" y2="800"/>
+          <line x1="700" y1="0" x2="700" y2="800"/><line x1="800" y1="0" x2="800" y2="800"/>
+          <line x1="900" y1="0" x2="900" y2="800"/><line x1="1000" y1="0" x2="1000" y2="800"/>
+          <line x1="1100" y1="0" x2="1100" y2="800"/><line x1="1200" y1="0" x2="1200" y2="800"/>
+          <line x1="1300" y1="0" x2="1300" y2="800"/>
+        </g>
+        <g stroke="#243024" stroke-width="3" fill="none">
+          <line x1="0" y1="250" x2="1400" y2="250"/><line x1="0" y1="550" x2="1400" y2="550"/>
+          <line x1="350" y1="0" x2="350" y2="800"/><line x1="750" y1="0" x2="750" y2="800"/>
+          <line x1="1100" y1="0" x2="1100" y2="800"/>
+          <line x1="0" y1="800" x2="700" y2="0"/><line x1="400" y1="800" x2="1400" y2="0"/>
+        </g>
+        <g fill="#0d180d" opacity="0.9">
+          <rect x="110" y="110" width="90" height="80"/><rect x="215" y="110" width="80" height="80"/>
+          <rect x="110" y="210" width="90" height="70"/><rect x="215" y="210" width="80" height="70"/>
+          <rect x="360" y="110" width="90" height="80"/><rect x="465" y="120" width="75" height="70"/>
+          <rect x="360" y="215" width="100" height="70"/><rect x="760" y="110" width="90" height="80"/>
+          <rect x="865" y="110" width="80" height="80"/><rect x="760" y="210" width="90" height="70"/>
+          <rect x="1110" y="110" width="90" height="80"/><rect x="1215" y="115" width="80" height="75"/>
+          <rect x="110" y="560" width="90" height="80"/><rect x="215" y="560" width="80" height="80"/>
+          <rect x="360" y="560" width="100" height="80"/><rect x="760" y="560" width="90" height="80"/>
+          <rect x="865" y="570" width="80" height="70"/><rect x="1110" y="560" width="90" height="80"/>
+          <rect x="110" y="660" width="90" height="80"/><rect x="360" y="665" width="100" height="75"/>
+          <rect x="760" y="660" width="90" height="80"/><rect x="1110" y="665" width="90" height="75"/>
+        </g>
+        <ellipse cx="700" cy="400" rx="90" ry="65" fill="#0f1f0f" opacity="0.9"/>
+        <path d="M 0 420 Q 300 390 600 430 Q 900 470 1200 410 L 1400 405" stroke="#2d3d2d" stroke-width="5" fill="none"/>
+        <!-- player marker -->
+        <circle cx="700" cy="400" r="10" fill="#fff" opacity="0.8"/>
+        <circle cx="700" cy="400" r="16" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="700" cy="400" r="22" fill="none" stroke="#fff" stroke-width="0.8" opacity="0.15"/>
+      </svg>
+    </div>
+    <div id="about-content">
+      <div id="about-left">
+        <div class="eyebrow">Player Profile</div>
+        <div class="player-name">Ujwal<br>Hannehra</div>
+        <div class="name-rule"></div>
+        <div class="player-title">Project Coordinator / Event &amp; Experiential Marketing</div>
+        <p class="player-bio">2.5+ years coordinating cross-functional teams across 40–50 event and marketing installations annually for tier-1 agencies and brand clients. From creative brief to on-site execution. Based in Bengaluru, India.</p>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val">40–50</div><div class="stat-label">Events / Year</div></div>
+          <div class="stat-box"><div class="stat-val">2.5+</div><div class="stat-label">Years Exp</div></div>
+          <div class="stat-box"><div class="stat-val">7–10</div><div class="stat-label">Team Size</div></div>
+        </div>
+      </div>
+      <div id="about-right">
+        <div class="s-header">// Current Status</div>
+        <div class="s-row"><div class="s-key">Location</div><div class="s-val">Bengaluru, India</div></div>
+        <div class="s-row"><div class="s-key">Education</div><div class="s-val">BBA Marketing, Jain Univ.</div></div>
+        <div class="s-row"><div class="s-key">Languages</div><div class="s-val">EN / HI / KN</div></div>
+        <div class="s-row"><div class="s-key">Status</div><div class="s-val" style="color:var(--green)">● Open to Offers</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRIEF -->
+  <div id="brief" class="section">
+    <div id="brief-map-wrap" style="height:100%;">
+      <svg width="100%" height="100%" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1400" height="800" fill="#0a130a"/>
+        <rect x="950" y="0" width="450" height="800" fill="#081208" opacity="0.7"/>
+        <g stroke="#1a2a1a" stroke-width="1" fill="none" opacity="0.6">
+          <line x1="0" y1="100" x2="950" y2="100"/><line x1="0" y1="200" x2="950" y2="200"/>
+          <line x1="0" y1="300" x2="950" y2="300"/><line x1="0" y1="400" x2="950" y2="400"/>
+          <line x1="0" y1="500" x2="950" y2="500"/><line x1="0" y1="600" x2="950" y2="600"/>
+          <line x1="0" y1="700" x2="950" y2="700"/>
+          <line x1="100" y1="0" x2="100" y2="800"/><line x1="200" y1="0" x2="200" y2="800"/>
+          <line x1="300" y1="0" x2="300" y2="800"/><line x1="400" y1="0" x2="400" y2="800"/>
+          <line x1="500" y1="0" x2="500" y2="800"/><line x1="600" y1="0" x2="600" y2="800"/>
+          <line x1="700" y1="0" x2="700" y2="800"/><line x1="800" y1="0" x2="800" y2="800"/>
+        </g>
+        <g stroke="#243024" stroke-width="3" fill="none">
+          <line x1="0" y1="280" x2="950" y2="280"/><line x1="0" y1="540" x2="950" y2="540"/>
+          <line x1="370" y1="0" x2="370" y2="800"/><line x1="660" y1="0" x2="660" y2="800"/>
+          <line x1="0" y1="800" x2="520" y2="0"/><line x1="250" y1="800" x2="950" y2="120"/>
+        </g>
+        <g fill="#0d180d" opacity="0.8">
+          <rect x="110" y="110" width="80" height="80"/><rect x="210" y="110" width="70" height="80"/>
+          <rect x="380" y="110" width="75" height="80"/><rect x="465" y="120" width="70" height="70"/>
+          <rect x="670" y="110" width="80" height="80"/><rect x="760" y="110" width="70" height="80"/>
+          <rect x="110" y="300" width="70" height="90"/><rect x="200" y="310" width="80" height="80"/>
+          <rect x="380" y="300" width="80" height="90"/><rect x="670" y="300" width="80" height="90"/>
+          <rect x="110" y="560" width="80" height="80"/><rect x="210" y="560" width="70" height="80"/>
+          <rect x="380" y="560" width="90" height="80"/><rect x="670" y="560" width="80" height="80"/>
+          <rect x="760" y="560" width="70" height="80"/>
+        </g>
+        <ellipse cx="520" cy="415" rx="85" ry="60" fill="#0f1f0f" opacity="0.9"/>
+        <path d="M 0 410 Q 200 390 420 430 Q 620 465 820 410 L 950 402" stroke="#2d3d2d" stroke-width="5" fill="none"/>
+        <!-- active marker -->
+        <circle cx="370" cy="280" r="11" fill="none" stroke="var(--green)" stroke-width="2"/>
+        <circle cx="370" cy="280" r="5" fill="var(--green)"/>
+        <circle cx="370" cy="280" r="16" fill="none" stroke="var(--green)" stroke-width="0.8" opacity="0.4"/>
+        <circle cx="370" cy="280" r="22" fill="none" stroke="var(--green)" stroke-width="0.5" opacity="0.2"/>
+        <!-- other markers -->
+        <circle cx="660" cy="415" r="6" fill="none" stroke="#3a5a2a" stroke-width="1.5"/><circle cx="660" cy="415" r="3" fill="#3a5a2a"/>
+        <circle cx="200" cy="560" r="6" fill="none" stroke="#3a5a2a" stroke-width="1.5"/><circle cx="200" cy="560" r="3" fill="#3a5a2a"/>
+        <circle cx="520" cy="650" r="6" fill="none" stroke="#3a5a2a" stroke-width="1.5"/><circle cx="520" cy="650" r="3" fill="#3a5a2a"/>
+        <!-- player -->
+        <circle cx="520" cy="415" r="8" fill="#fff" opacity="0.9"/>
+        <circle cx="520" cy="415" r="13" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.35"/>
+        <!-- compass -->
+        <text x="930" y="28" font-family="Barlow Condensed" font-size="14" fill="#3a4a3a" text-anchor="end">N</text>
+        <line x1="920" y1="14" x2="920" y2="34" stroke="#3a4a3a" stroke-width="1"/>
+      </svg>
+      <!-- Mission overlay -->
+      <div class="map-jobs-panel panel">
+        <div style="font-size:9px;color:#2a3a2a;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">// Mission History</div>
+        <div class="job-entry active-job">
+          <div class="job-num">01</div>
+          <div class="job-role">Project Coordinator</div>
+          <span class="job-badge badge-active">▶ Active Mission</span>
+          <div class="job-meta">4Brains Technologies · Feb 2025 – Present</div>
+          <div class="job-desc">End-to-end delivery of experiential installations for IBM, Salesforce & Commvault. Teams of 7–10 across design, dev & ops.</div>
+        </div>
+        <div class="job-entry">
+          <div class="job-num">02</div>
+          <div class="job-role">Project Coordinator</div>
+          <span class="job-badge badge-done">✓ Mission Complete</span>
+          <div class="job-meta">Craftech 360 · Sep 2023 – Oct 2024</div>
+          <div class="job-desc">Multiple concurrent experiential marketing installations from brief to execution.</div>
+        </div>
+        <div class="job-entry">
+          <div class="job-num">03</div>
+          <div class="job-role">Client Servicing Coordinator</div>
+          <span class="job-badge badge-done">✓ Mission Complete</span>
+          <div class="job-meta">Craftech 360 · Jul – Sep 2023</div>
+        </div>
+        <div class="job-entry">
+          <div class="job-num">04</div>
+          <div class="job-role">Graphic Designer (Intern)</div>
+          <span class="job-badge badge-done">✓ Mission Complete</span>
+          <div class="job-meta">Maayakriya · Jul 2022 – Jul 2023</div>
+        </div>
+      </div>
+      <!-- Character panel -->
+      <div class="map-char-panel panel">
+        <div style="font-size:9px;color:#2a3a2a;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;">// Player</div>
+        <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;line-height:1.1;margin-bottom:8px;">Ujwal<br>Hannehra</div>
+        <div style="font-size:10px;color:var(--green);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">Project Coordinator</div>
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:12px;"></div>
+        <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Location</div>
+        <div style="font-size:13px;color:#ccc;font-family:'Barlow',sans-serif;margin-bottom:10px;">Bengaluru, India</div>
+        <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Status</div>
+        <div style="font-size:13px;color:var(--green);font-family:'Barlow',sans-serif;margin-bottom:12px;">● Open to Offers</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="stats" class="section">
+    <div id="stats-inner">
+      <div class="stats-grid">
+        <div>
+          <div class="cat-header">Coordination</div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Cross-functional Team Mgmt</span><span class="skill-pct">85</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="85%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Multi-project Scheduling</span><span class="skill-pct">90</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="90%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">End-to-end Delivery</span><span class="skill-pct">90</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="90%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Vendor & Stakeholder Liaison</span><span class="skill-pct">85</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="85%"></div></div></div>
+        </div>
+        <div>
+          <div class="cat-header">Client Management</div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Agency & Client Relations</span><span class="skill-pct">90</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="90%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Brief Development</span><span class="skill-pct">80</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="80%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Approval Workflows</span><span class="skill-pct">85</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="85%"></div></div></div>
+        </div>
+        <div>
+          <div class="cat-header">Creative</div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Creative Ideation & Pitching</span><span class="skill-pct">75</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="75%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Visual Design (PS · Premiere)</span><span class="skill-pct">70</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="70%"></div></div></div>
+        </div>
+        <div>
+          <div class="cat-header">Tools</div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Notion</span><span class="skill-pct">82</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="82%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">MS Office Suite</span><span class="skill-pct">90</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="90%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Adobe Photoshop</span><span class="skill-pct">70</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="70%"></div></div></div>
+          <div class="skill-row"><div class="skill-top"><span class="skill-name">Adobe Premiere Pro</span><span class="skill-pct">70</span></div><div class="skill-track"><div class="skill-fill" style="width:0%" data-w="70%"></div></div></div>
+        </div>
+      </div>
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.07);">
+        <div style="font-size:9px;color:#444;letter-spacing:4px;text-transform:uppercase;margin-bottom:10px;">Languages</div>
+        <div style="display:flex;gap:32px;margin-bottom:18px;">
+          <div style="font-size:13px;color:#888;font-family:'Barlow',sans-serif;">🎵 English — Fluent</div>
+          <div style="font-size:13px;color:#888;font-family:'Barlow',sans-serif;">🎵 Hindi — Fluent</div>
+          <div style="font-size:13px;color:#888;font-family:'Barlow',sans-serif;">🎵 Kannada — Fluent</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="font-size:9px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-right:6px;">Wanted Level</div>
+          <span style="font-size:13px;color:var(--green)">★</span><span style="font-size:13px;color:var(--green)">★</span><span style="font-size:13px;color:var(--green)">★</span><span style="font-size:13px;color:var(--green)">★</span><span style="font-size:13px;color:var(--green)">★</span><span style="font-size:13px;color:#222">★</span>
+          <span style="font-size:11px;color:#555;margin-left:8px;font-family:'Barlow',sans-serif;">Wanted for: delivering too many projects on time</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTIONS -->
+  <div id="options" class="section">
+    <div id="options-inner">
+      <div id="contact-left">
+        <div class="opts-eyebrow">// Get In Touch</div>
+        <div class="contact-panel">
+          <div class="incoming on" id="incoming-txt">▶ INCOMING CONNECTION...</div>
+          <div class="contact-row"><span class="contact-k">Email</span><span class="contact-v">ujwal1526@gmail.com</span></div>
+          <div class="contact-row"><span class="contact-k">Phone</span><span class="contact-v">+91 8296009381</span></div>
+          <div class="contact-row"><span class="contact-k">Location</span><span class="contact-v">Bengaluru, India</span></div>
+          <div class="contact-row" style="border:none"><span class="contact-k">LinkedIn</span><span class="contact-v">linkedin.com/in/ujwalhannehra</span></div>
+        </div>
+        <div class="form-label">Name</div><input class="form-input" type="text"/>
+        <div class="form-label">Email</div><input class="form-input" type="email"/>
+        <div class="form-label">Message</div><textarea class="form-textarea" rows="4"></textarea>
+        <button class="send-btn">Send Message ▶</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div id="footer">
+  <span class="footer-txt">© Ujwal Hannehra</span>
+  <span class="footer-txt" id="footer-mid">★★★★★★ Wanted Level: Hired</span>
+  <span class="footer-txt">Type ROCKSTAR for a surprise</span>
+</div>
+
+<div id="toast">🎮 Cheat Code Activated: Dream Job Unlocked</div>
+<div id="flash"></div>
+
+<script>
+// ── Cursor
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => cursor.style.transform = 'translate(-50%,-50%) scale(0.8)');
+document.addEventListener('mouseup',   () => cursor.style.transform = 'translate(-50%,-50%) scale(1)');
+
+// ── Clock
+function updateClock(){
+  const n = new Date();
+  const day = n.toLocaleDateString('en-US',{weekday:'short'}).toUpperCase();
+  const t = n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('time-label').textContent = `${day} ${t} · Bengaluru, India`;
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// ── LOADING SCREEN
+(function(){
+  const fill    = document.getElementById('loading-bar-fill');
+  const pct     = document.getElementById('loading-pct');
+  const screen  = document.getElementById('loading');
+  const tipEl   = document.getElementById('loading-tip');
+  const labelEl = document.getElementById('loading-tip-label');
+  const center  = document.getElementById('loading-center');
+
+  const tips = [
+    { label: 'Objective',   text: 'Coordinate the team. Deliver the activation. Make it look easy.' },
+    { label: 'Intel',       text: '40–50 events a year. IBM, Salesforce, Commvault. No mission failed.' },
+    { label: 'Strategy',    text: 'From brief to build — the best campaigns start with someone who actually reads the brief.' },
+    { label: 'Field Note',  text: 'Managing 7–10 people across AR/VR, projection mapping, and live events. Just another day.' },
+  ];
+
+  let tipIdx = 0;
+
+  function showTip(idx) {
+    tipEl.style.opacity = '0';
+    setTimeout(() => {
+      labelEl.textContent = tips[idx].label;
+      tipEl.textContent   = tips[idx].text;
+      tipEl.style.opacity = '1';
+    }, 400);
+  }
+
+  // show center content
+  setTimeout(() => center.classList.add('show'), 200);
+  showTip(0);
+
+  let progress  = 0;
+  let lastTipAt = 0;
+
+  const interval = setInterval(() => {
+    const speed = progress < 20 ? 1.8
+                : progress < 50 ? 0.42
+                : progress < 72 ? 0.25
+                : progress < 88 ? 0.13
+                : progress < 95 ? 0.06
+                : 1.8;
+
+    progress = Math.min(100, progress + speed * (0.7 + Math.random() * 0.5));
+    fill.style.width = progress + '%';
+    pct.textContent  = Math.floor(progress) + '%';
+
+    // rotate tips every ~25%
+    const tipStep = Math.floor(progress / 25);
+    if(tipStep !== lastTipAt && tipStep < tips.length) {
+      lastTipAt = tipStep;
+      tipIdx = tipStep;
+      showTip(tipIdx);
+    }
+
+    if(progress >= 100){
+      clearInterval(interval);
+      pct.textContent = '100%';
+      setTimeout(() => {
+        screen.classList.add('fade-out');
+        setTimeout(() => { screen.style.display = 'none'; }, 850);
+      }, 700);
+    }
+  }, 80);
+})();
+
+// ── AREA NOTIFICATION
+function showArea(name, sub){
+  const el = document.getElementById('area-notif');
+  document.getElementById('area-name').textContent = name;
+  document.getElementById('area-sub').textContent = sub;
+  el.classList.remove('hide'); el.classList.add('show');
+  setTimeout(() => { el.classList.remove('show'); el.classList.add('hide'); }, 2200);
+}
+
+// ── CHARACTER SWITCH
+const tabMap = { about:'cc-about', brief:'cc-brief', stats:'cc-stats', options:'cc-options' };
+const nameMap = { about:'ABOUT', brief:'BRIEF', stats:'STATS', options:'OPTIONS' };
+let switching = false;
+
+function doCharSwitch(tabId, area, areasub){
+  if(switching) return;
+  switching = true;
+
+  const overlay = document.getElementById('char-switch');
+  const mapEl   = document.getElementById('char-switch-map');
+  const barEl   = document.getElementById('char-switch-bar');
+  const nameEl  = document.getElementById('char-switch-name');
+  const csnName = document.getElementById('csn-name');
+  const content = document.getElementById('content');
+
+  // prep — reset everything invisible
+  overlay.style.transition = 'none';
+  overlay.style.opacity    = '0';
+  overlay.classList.add('active');
+  mapEl.style.animation    = 'none';
+  mapEl.style.opacity      = '0';
+  barEl.style.opacity      = '0';
+  barEl.style.animation    = 'none';
+  nameEl.style.opacity     = '0';
+  nameEl.style.animation   = 'none';
+
+  // set the target tab text + circles
+  document.querySelectorAll('.char-circle').forEach(c => c.classList.remove('selected'));
+  const cc = document.getElementById(tabMap[tabId]);
+  if(cc) cc.classList.add('selected');
+  csnName.textContent = nameMap[tabId];
+
+  // ── STEP 1: fade out content (350ms)
+  content.style.transition = 'opacity 0.35s ease';
+  content.style.opacity    = '0';
+
+  setTimeout(() => {
+
+    // ── STEP 2: snap overlay to black
+    overlay.style.transition = 'opacity 0.25s ease';
+    overlay.style.opacity    = '1';
+
+    setTimeout(() => {
+
+      // ── STEP 3: map zooms in slowly
+      void mapEl.offsetWidth;
+      mapEl.style.animation = 'switchZoomIn 1.4s cubic-bezier(0.1,0,0.3,1) forwards';
+
+      // ── STEP 4: bar + name fade in after map starts
+      setTimeout(() => {
+        barEl.style.animation  = 'switchFadeIn 0.5s ease forwards';
+        barEl.style.opacity    = '1';
+        nameEl.style.animation = 'nameReveal 0.5s ease forwards';
+        nameEl.style.opacity   = '1';
+      }, 300);
+
+      // ── STEP 5: hold, then swap section silently under overlay
+      setTimeout(() => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        content.style.transition = 'none';
+        content.style.opacity    = '0';
+
+        if(tabId === 'stats'){
+          setTimeout(() => {
+            document.querySelectorAll('.skill-fill').forEach(el => { el.style.width = el.dataset.w; });
+          }, 100);
+        }
+      }, 1200);
+
+      // ── STEP 6: fade overlay out (after hold)
+      setTimeout(() => {
+        overlay.style.transition = 'opacity 0.4s ease';
+        overlay.style.opacity    = '0';
+
+        // ── STEP 7: fade new content in as overlay disappears
+        setTimeout(() => {
+          content.style.transition = 'opacity 0.4s ease';
+          content.style.opacity    = '1';
+          overlay.classList.remove('active');
+          mapEl.style.animation = 'none';
+          barEl.style.opacity   = '0';
+          nameEl.style.opacity  = '0';
+          showArea(area, areasub);
+          switching = false;
+        }, 250);
+
+      }, 1600);
+
+    }, 200); // wait for overlay to go black
+
+  }, 350); // wait for content to fade out
+}
+
+// ── Tabs
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if(switching) return;
+    doCharSwitch(btn.dataset.tab, btn.dataset.area, btn.dataset.areasub);
+  });
+});
+
+// ── Blink incoming
+let blinkOn = true;
+setInterval(() => {
+  const el = document.getElementById('incoming-txt');
+  if(el){ blinkOn = !blinkOn; el.className = 'incoming ' + (blinkOn ? 'on' : 'off'); }
+}, 700);
+
+// ── Cheat code
+let cheat = '';
+document.addEventListener('keydown', e => {
+  cheat = (cheat + e.key).slice(-9).toUpperCase();
+  if(cheat.includes('ROCKSTAR')){
+    const f = document.getElementById('flash'), t = document.getElementById('toast');
+    f.style.display = 'block'; t.style.display = 'block';
+    setTimeout(() => f.style.display = 'none', 500);
+    setTimeout(() => t.style.display  = 'none', 3000);
+    cheat = '';
+  }
+});
+</script>
+</body>
+</html>
