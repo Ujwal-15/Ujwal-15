@@ -133,16 +133,53 @@ body{background:var(--bg);color:var(--white);font-family:'Outfit',sans-serif;ove
     linear-gradient(to right,rgba(20,20,20,0.97) 30%,rgba(20,20,20,0.3) 65%,rgba(20,20,20,0.85) 100%),
     linear-gradient(to top,rgba(20,20,20,1) 0%,transparent 35%);
 }
-.hero-deco-text{
-  position:absolute;right:-1%;top:50%;transform:translateY(-50%);z-index:2;
-  font-family:'Bebas Neue',sans-serif;font-size:clamp(220px,26vw,420px);
-  color:rgba(255,255,255,0.022);line-height:0.85;
-  letter-spacing:-15px;user-select:none;pointer-events:none;
+.hero-inner{
+  position:relative;z-index:3;
+  width:100%;padding:0 4%;
+  display:flex;align-items:center;justify-content:space-between;gap:40px;
 }
 #hero-content{
-  position:relative;z-index:3;padding:0 4%;max-width:580px;
+  flex:0 0 auto;max-width:520px;
   animation:fadeUp 0.9s 0.2s both ease;
 }
+/* ── HERO RIGHT PANEL ── */
+.hero-right{
+  flex:0 0 auto;
+  display:flex;flex-direction:column;gap:12px;
+  animation:fadeUp 0.9s 0.5s both ease;
+}
+.hero-stat-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:6px;padding:20px 28px;
+  min-width:220px;
+  backdrop-filter:blur(4px);
+  position:relative;overflow:hidden;
+}
+.hero-stat-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+}
+.hero-stat-card.sc-red::before{background:var(--red);}
+.hero-stat-card.sc-green::before{background:#46d369;}
+.hero-stat-card.sc-gold::before{background:#f5a623;}
+.hsc-num{
+  font-family:'Bebas Neue',sans-serif;font-size:46px;line-height:1;
+  letter-spacing:1px;margin-bottom:2px;
+}
+.sc-red .hsc-num{color:#fff;}
+.sc-green .hsc-num{color:#46d369;}
+.sc-gold .hsc-num{color:#f5a623;}
+.hsc-label{font-size:11px;color:rgba(255,255,255,0.45);font-weight:300;letter-spacing:1px;}
+.hero-top10{
+  background:rgba(229,9,20,0.08);border:1px solid rgba(229,9,20,0.2);
+  border-radius:6px;padding:14px 20px;
+  display:flex;align-items:center;gap:14px;
+}
+.top10-num{
+  font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;color:var(--red);
+}
+.top10-text{font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;font-weight:300;}
+.top10-text strong{color:rgba(255,255,255,0.8);font-weight:500;display:block;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
 
 .hero-eyebrow{
@@ -427,7 +464,6 @@ body{background:var(--bg);color:var(--white);font-family:'Outfit',sans-serif;ove
 .contact-box{
   display:grid;grid-template-columns:1fr 1fr;
   background:#181818;border-radius:6px;overflow:hidden;
-  max-width:860px;
 }
 .cbox-left{padding:44px 48px;border-right:1px solid rgba(255,255,255,0.07);}
 .cbox-eyebrow{font-size:10px;color:var(--red);letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;}
@@ -461,7 +497,7 @@ body{background:var(--bg);color:var(--white);font-family:'Outfit',sans-serif;ove
 #rec-section{padding:28px 4% 60px;}
 .rec-box{
   background:#181818;border-radius:8px;
-  padding:52px 56px;max-width:900px;
+  padding:52px 56px;
   position:relative;overflow:hidden;
 }
 .rec-box::before{
@@ -579,6 +615,31 @@ footer{padding:40px 4% 50px;border-top:1px solid rgba(255,255,255,0.08);}
 .m-hl{display:flex;gap:12px;font-size:14px;color:rgba(255,255,255,0.68);line-height:1.65;font-weight:300;}
 .m-hl::before{content:'▶';color:var(--red);font-size:9px;margin-top:5px;flex-shrink:0;}
 
+/* ══════════════════════════════════════
+   RESPONSIVE — MOBILE & TABLET
+══════════════════════════════════════ */
+@media (max-width:900px){
+  /* hero right panel hides on tablet, content goes full width */
+  .hero-right{display:none;}
+  #hero-content{max-width:100%;}
+  .hero-inner{padding:0 5%;}
+
+  /* skills single column */
+  .skills-panel{grid-template-columns:1fr;}
+
+  /* contact stack */
+  .contact-box{grid-template-columns:1fr;}
+  .cbox-left{border-right:none;border-bottom:1px solid rgba(255,255,255,0.07);padding:36px 32px;}
+  .cbox-right{padding:32px 32px;}
+
+  /* genre grid — 2 columns */
+  .genre-grid{
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:170px 170px 170px;
+  }
+  .genre-tile--large{grid-row:span 1;grid-column:span 2;}
+}
+
 /* ── SCROLL FADE ── */
 .fade-in-row{opacity:0;transform:translateY(22px);transition:opacity 0.55s ease,transform 0.55s ease;}
 .fade-in-row.vis{opacity:1;transform:translateY(0);}
@@ -637,28 +698,52 @@ footer{padding:40px 4% 50px;border-top:1px solid rgba(255,255,255,0.08);}
 <section id="hero">
   <div class="hero-bg-layer"></div>
   <div class="hero-gradient"></div>
-  <div class="hero-deco-text">UH</div>
-  <div id="hero-content">
-    <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Now Streaming</div>
-    <h1 class="hero-name">Ujwal<br><em>Hannehra</em></h1>
-    <div class="hero-chips">
-      <span class="chip-match">97% Match</span>
-      <span class="chip-divider"></span>
-      <span class="chip-text">2025</span>
-      <span class="chip-divider"></span>
-      <span class="chip-tag">Project Coordinator</span>
-      <span class="chip-tag">Bengaluru</span>
+  <div class="hero-inner">
+    <div id="hero-content">
+      <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Now Streaming</div>
+      <h1 class="hero-name">Ujwal<br><em>Hannehra</em></h1>
+      <div class="hero-chips">
+        <span class="chip-match">97% Match</span>
+        <span class="chip-divider"></span>
+        <span class="chip-text">2025</span>
+        <span class="chip-divider"></span>
+        <span class="chip-tag">Project Coordinator</span>
+        <span class="chip-tag">Bengaluru</span>
+      </div>
+      <p class="hero-desc">Experiential marketing specialist who turns briefs into immersive realities — AR/VR, projection mapping, phygital installations. 2.5+ years bringing brands to life at scale.</p>
+      <div class="hero-btns">
+        <button class="btn-white" onclick="openModal('job0')">
+          <svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#000"/></svg>
+          View Profile
+        </button>
+        <button class="btn-grey" onclick="document.getElementById('experience-row').scrollIntoView({behavior:'smooth'})">
+          <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="8.5" cy="8.5" r="7.5" stroke="#fff" stroke-width="1.4"/><line x1="8.5" y1="6" x2="8.5" y2="12" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><circle cx="8.5" cy="4.5" r="0.9" fill="#fff"/></svg>
+          More Info
+        </button>
+      </div>
     </div>
-    <p class="hero-desc">Experiential marketing specialist who turns briefs into immersive realities — AR/VR, projection mapping, phygital installations. 2.5+ years bringing brands to life at scale.</p>
-    <div class="hero-btns">
-      <button class="btn-white" onclick="openModal('job0')">
-        <svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#000"/></svg>
-        View Profile
-      </button>
-      <button class="btn-grey" onclick="document.getElementById('experience-row').scrollIntoView({behavior:'smooth'})">
-        <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="8.5" cy="8.5" r="7.5" stroke="#fff" stroke-width="1.4"/><line x1="8.5" y1="6" x2="8.5" y2="12" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><circle cx="8.5" cy="4.5" r="0.9" fill="#fff"/></svg>
-        More Info
-      </button>
+
+    <!-- RIGHT STATS PANEL -->
+    <div class="hero-right">
+      <div class="hero-top10">
+        <div class="top10-num">#1</div>
+        <div class="top10-text">
+          <strong>Currently Active</strong>
+          4Brains Technologies
+        </div>
+      </div>
+      <div class="hero-stat-card sc-green">
+        <div class="hsc-num">40+</div>
+        <div class="hsc-label">Events delivered per year</div>
+      </div>
+      <div class="hero-stat-card sc-red">
+        <div class="hsc-num">2.5</div>
+        <div class="hsc-label">Years in experiential marketing</div>
+      </div>
+      <div class="hero-stat-card sc-gold">
+        <div class="hsc-num">4</div>
+        <div class="hsc-label">Companies · Roles executed</div>
+      </div>
     </div>
   </div>
 </section>
